@@ -1,0 +1,11 @@
+c = load 'panda/20120101.csv' as ( consumer, dato, direction,unit,timespan, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24);
+c3 = foreach c generate consumer, dato, direction, t1+t2+t3+t4+t5+t6+t7+t8+t9+t10+t11+t12+t13+t14+t15+t16+t17+t18+t19+t20+t21+t22+t23+t24 as ct;
+c3_grouped = group c3 by consumer;
+c3_avg_tot = foreach c3_grouped generate group, AVG( c3.ct );
+x = limit c3_avg_tot 3;
+dump x;
+t = load 'panda/Temp201201.csv' using PigStorage(';') as( temp, dato );
+t_temp_grouped = group t all;
+t_avg = foreach t_temp_grouped generate group, AVG( t.temp );
+y = limit t_avg 5;
+dump y.temp;
