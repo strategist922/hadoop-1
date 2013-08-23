@@ -8,4 +8,4 @@ t = load 'panda/Temp201201.csv' using PigStorage(';') as( temp, dato );
 t_temp_grouped = group t all;
 t_avg = foreach t_temp_grouped generate group, AVG( t.temp );
 y = limit t_avg 5;
-dump y.temp;
+dump y;
