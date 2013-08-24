@@ -1,0 +1,28 @@
+c = load 'panda/20120101.csv' USING PigStorage('\t') as ( consumer:long, dato:chararray, direction,unit,timespan, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24);
+c1 = FOREACH c GENERATE consumer, CONCAT(REPLACE(dato, '/','-'), ' 00:00'), direction, t1 as consumption;
+c2 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 01:00'), direction, t2 as consumption;
+--c9 = FOREACH c generate consumer, dato, direction, t9 as consumption;
+--c12 = FOREACH c generate consumer, dato, direction, t12 as consumption;
+--c15 = FOREACH c generate consumer, dato, direction, t15 as consumption;
+--c18 = FOREACH c generate consumer, dato, direction, t18 as consumption;
+--c21 = FOREACH c generate consumer, dato, direction, t21 as consumption;
+--c24 = FOREACH c generate consumer, dato, direction, t24 as consumption;
+c_all = UNION c1,c2; --,c9,c12,c15,c18,c21,c24;
+--c_tot = FOREACH c generate consumer, dato, direction, (t1+t2+t3+t4+t5+t6+t7+t8+t9+t10+t11+t12+t13+t14+t15+t16+t17+t18+t19+t20+t21+t22+t23+t24) as total;
+--c_grouped = group c_tot by consumer;
+--c_avg_total = foreach c_grouped generate group, AVG(c_tot.total) as total_avg;
+--x = limit c1 5;
+--dump x;
+t = load 'panda/Temp201201.csv' using PigStorage(';') as( temp:float, dato:chararray, unit, place );
+--t_temp_grouped = group t all;
+--t_avg = foreach t_temp_grouped generate group, AVG( t.temp );
+c_all_temp = join c_all by dato, t by dato using 'replicated';
+y = limit c_all_temp 100;
+dump y;
+
+--c_grouped = group c by consumer;
+--c_test = foreach c_grouped generate group, c3.t1, c3.t4;
+--store c_test into 'test.txt';
+--c_avg = foreach c_grouped generate group, AVG(c.t1), AVG(c.t4),AVG(c.t7),AVG(c.t10),AVG(c.t13),AVG(c.t16),AVG(c.t19), AVG(c.t22);
+--store c_avg into 'panda/c_avg.csv';
+--temp = load 'panda/Temp201201.csv' as ( temperature, utc_time );
