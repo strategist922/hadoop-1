@@ -1,5 +1,9 @@
+--load pandadate into pig
+--pls note I used floats in the beginning, but encountered some casting and conversion problems.
 c = load 'asv:///pandadata2012.csv' USING PigStorage('\t') as ( consumer:long, dato:chararray, direction,unit,timespan, 
 t1:double,t2:double,t3:double,t4:double,t5:double,t6:double,t7:double,t8:double,t9:double,t10:double,t11:double,t12:double,t13:double,t14:double,t15:double,t16:double,t17:double,t18:double,t19:double,t20:double,t21:double,t22:double,t23:double,t24:double);
+
+--We need to pivot the table. Might be a smarter way to do this (ie scooping the data differently would be the smartest thing to do)
 
 c1 = FOREACH c GENERATE consumer, CONCAT(REPLACE(dato, '/','-'), ' 24:00') as dato, direction, t1 as consumption;
 c2 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 01:00') as dato, direction, t2 as consumption;
@@ -26,31 +30,38 @@ c22 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 21:00'), dir
 c23 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 22:00'), direction, t23 as consumption;
 c24 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 23:00'), direction, t24 as consumption;
 
+--Making a new table, by joining all the pivoted tables 
+
 c_all = UNION c1,c2,c3,c4,c5,c6,c7,c8,c9,c10, c11, c12,c13,c14, c15,c16, c17, c18,c19, c20,c21,c22,c23,c24;
+
+--One for testing
 --c_all = UNION c1,c2;
-
-
 --c_tot = FOREACH c generate consumer, dato, direction, (t1+t2+t3+t4+t5+t6+t7+t8+t9+t10+t11+t12+t13+t14+t15+t16+t17+t18+t19+t20+t21+t22+t23+t24) as total;
+--getting the hourly average for the whole year, pr. user pr. hour. Think this is correct. Note the SUBSTRING grouping did not mean any loss of performance 
 c_grouped = group c_all by ( consumer, SUBSTRING(dato, 11,16) );
 c_avg_total = foreach c_grouped generate group.$0, group.$1, AVG(c_all.consumption) as total_avg;
 
+--Load the weather and get the yearly average. Is the hourly average more correct??
+--TODO try to change this to the hourly temp average and run the analysis again
 t = load 'asv:///WeatherTemp.csv' using PigStorage(';') as( temp:double, dato:chararray );
 t_temp_grouped = group t all;
 t_avg = foreach t_temp_grouped generate group, AVG( t.temp );
 
+--join power measurement with temperature average and consumption average. Note the replicated function
 ct = join c_all by $1, t by $1 using 'replicated';
 ct_c_avg = join ct by ( $0, SUBSTRING($1,11,16)), c_avg_total by ( $0, $1) using 'replicated';
 
+--Doing calculations little by litte find difference between consumption and temperature and their averages (pearson)
 c_all_avg =  foreach ct_c_avg generate $0 as consumer, $1 as dato, $3 as consumption, $4 as temp, ( $3 - $8) as a, ($4-t_avg.$1) as b;
-
+--get the product of differenses and their squares according to (pearson)
 c_final = foreach c_all_avg generate consumer, dato, consumption, temp, a,b,(a*b) as ab ,(a*a) as aa, (b*b) as bb;
-
+--Sum up the products and squares (hmmm these numbers could be EXTREMLY large or?)
 c_final_grouped = group c_final by consumer;
-
 c_final_sum = foreach c_final_grouped generate group, SUM(c_final.ab) as sab, SUM(c_final.aa) as saa, SUM( c_final.bb) as sbb;
-
+--Make the final pearson calculation for each consumer
 c_correl = foreach c_final_sum  generate $0 as consumer, ( sab / SQRT( saa * sbb )) as correlation; 
-
+--test things
 --y = limit c_correl 100;
 --dump y;
+--Store the table
 STORE c_correl INTO 'c_correl' USING PigStorage (',');
