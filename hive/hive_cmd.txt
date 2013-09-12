@@ -1,0 +1,14 @@
+CREATE TABLE panda ( consumer STRING, dato STRING, direc STRING, consumption DOUBLE,  temperature DOUBLE, dato2 STRING ) ROW FORMAT DELIMiTED FIELDS TERMINATED BY '\t';
+
+LOAD DATA INPATH '/user/laoch/panda_data' OVERWRITE INTO TABLE panda;
+
+INSERT OVERWRITE LOCAL DIRECTORY 'C:/tmp/laoch/' select consumer, CORR( consumption, temperature ) from panda group by consumer;
+
+
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+
+
+LOAD DATA INPATH '/user/laoch/icecream/icecream.csv' overwrite into table icecream;
+
+571313161100006289
