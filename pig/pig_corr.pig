@@ -7,7 +7,7 @@ t1:double,t2:double,t3:double,t4:double,t5:double,t6:double,t7:double,t8:double,
 --We need to pivot the table. Might be a smarter way to do this (ie scooping the data differently would be the smartest thing to do)
 
 
-c1 = FOREACH c GENERATE consumer, CONCAT(REPLACE(dato, '/','-'), ' 24:00') as dato, direction, t1 as consumption;
+c1 = FOREACH c GENERATE consumer, CONCAT(REPLACE(dato, '/','-'), ' 00:00') as dato, direction, t1 as consumption;
 c2 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 01:00') as dato, direction, t2 as consumption;
 c3 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 02:00') as dato, direction, t3 as consumption;
 c4 = FOREACH c generate consumer, CONCAT(REPLACE(dato, '/','-'), ' 03:00') as dato, direction, t4 as consumption;
