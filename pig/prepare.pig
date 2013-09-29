@@ -41,4 +41,5 @@ t = load 'asv:///WeatherTemp.csv' using PigStorage(';') as( temp:double, dato:ch
 --join the temperature and consumpotion
 c_all_temp = join c_all by dato, t by dato using 'replicated';
 
+--save th file somewhere, where Hive can get hold of it.
 STORE c_all_temp into 'panda_data' USING PigStorage(',');
