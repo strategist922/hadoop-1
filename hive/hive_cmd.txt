@@ -19,3 +19,24 @@ CREATE TABLE panda ( consumer STRING, dato STRING, direc STRING, unit STRING, ti
 CREATE TABLE panda_all ( consumer STRING, dato STRING, direction STRING, consumption STRING ) ROW FORMAT DELIMiTED FIELDS TERMINATED BY ',';
 
 LOAD DATA INPATH '/user/laoch/panda_all' overwrite into table panda_all;
+
+************************************************************************************************************************
+
+SMPIT
+***********************************************************************************************************************
+LOAD DATA INPATH 'asv://donghadoopcluster@donghadoop.blob.core.windows.net/Node_Meas_Outflows_2012_2013.csv' OVERWRITE INTO TABLE node_meas_outflows_12_13;
+
+LOAD DATA INPATH 'asv:///Node_Meas_Outflows_2012_2013.CSV' OVERWRITE INTO TABLE node_meas_outflows_12_13;
+
+/user/admin/Node_Meas_Outflows_hive
+
+create table nmo12_13 ( nodeid STRING, consumer STRING, pstart STRING, pend STRING, p double ) ROW FORMAT DELIMiTED FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH '/user/admin/Node_Meas_Outflows_hive_1' OVERWRITE INTO TABLE  nmo12_13;
+
+
+
+SELECT NODEID, consumer, SUBSTRING(pstart, 0, 4) , SUM(P) FROM nmo12_13 GROUP BY NODEID, consumer, SUBSTRING(pstart, 0, 4) LIMIT 10;
+
+
+
