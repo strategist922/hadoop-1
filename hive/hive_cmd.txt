@@ -34,9 +34,11 @@ create table nmo12_13 ( nodeid STRING, consumer STRING, pstart STRING, pend STRI
 
 LOAD DATA INPATH '/user/admin/Node_Meas_Outflows_hive_1' OVERWRITE INTO TABLE  nmo12_13;
 
-
-
 SELECT NODEID, consumer, SUBSTRING(pstart, 0, 4) , SUM(P) FROM nmo12_13 GROUP BY NODEID, consumer, SUBSTRING(pstart, 0, 4) LIMIT 10;
+**************************************************************
+LOAD DATA INPATH '/Node_Meas_Outflows_V1.csv' OVERWRITE INTO TABLE node_meas_outflows;
+
+INSERT OVERWRITE DIRECTORY '/user/admin/smpit_node_meas/' SELECT NODEID, consumer, SUBSTRING(pstart, 0, 4) , SUM(P) FROM Node_Meas_Outflows_V1.csv GROUP BY NODEID, consumer, SUBSTRING(pstart, 0, 4) LIMIT 10;
 
 
 
